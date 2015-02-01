@@ -1,3 +1,5 @@
+# TODO: implement __str__
+
 import json
 import os
 import datetime
@@ -13,6 +15,30 @@ class History:
         self.name = name # string
         self.threads = threads # list of Thread objects
 
+    # string representation
+    def __str__(self):
+        historyString = self.name + '\n\n\n'
+        for thread in self.threads:
+            historyString += '-----\n' + str(thread) + '\n\n'
+        return historyString
+
+    # returns History object from dictionary
+    @classmethod
+    def fromDict(cls, historyDict):
+        history = cls('', []) # empty initialization
+        history.name = historyDict['name']
+        for threadDict in historyDict['threads']:
+            history.threads.append(Thread.fromDict(threadDict))
+        return history
+
+    # returns History object from JSON file
+    @classmethod
+    def fromFile(cls, pathToJSON):
+        f = open(pathToJSON, 'r')
+        history = json.load(f)
+        f.close()
+        return cls.fromDict(history)
+
     # returns dict containing history information
     def toDict(self):
         historyDict = {}
@@ -22,11 +48,17 @@ class History:
             historyDict['threads'].append(thread.toDict())
         return historyDict
 
+    # saves history information as JSON file (returns nothing)
+    def toFile(self, pathToJSON):
+        f = open(pathToJSON, 'w')
+        json.dump(self.toDict(), f)
+        f.close()
+
     # returns list of all authors with messages across all threads in history
     def getAuthors(self):
         authors = []
         for thread in self.threads:
-            for author in thread.getAuthors:
+            for author in thread.getAuthors():
                 if author not in authors:
                     authors.append(author)
         return authors
@@ -40,9 +72,9 @@ class History:
     
     # returns dict of author/count key/val pairs
     def allAuthorCounts(self):
-        allAuthorCounts = dict.fromKeys(self.getAuthors(), 0)
+        allAuthorCounts = dict.fromkeys(self.getAuthors(), 0)
         for author in allAuthorCounts.keys():
-            allAuthorCounts['author'] = self.singleAuthorCount(self, author)
+            allAuthorCounts[author] = self.singleAuthorCount(author)
         return allAuthorCounts
 
 
@@ -52,6 +84,22 @@ class Thread:
     def __init__(self, name, messages):
         self.name = name # string
         self.messages = messages # list of Message objects
+
+    # string representation
+    def __str__(self):
+        threadString = self.name + '\n\n'
+        for message in self.messages:
+            threadString += str(message)
+        return threadString
+
+    # returns Message object from dictionary
+    @classmethod
+    def fromDict(cls, threadDict):
+        thread = cls('', []) # empty initialization
+        thread.name = threadDict['name']
+        for messageDict in threadDict['messages']:
+            thread.messages.append(Message.fromDict(messageDict))
+        return thread
 
     # returns dict containing thread information
     def toDict(self):
@@ -66,23 +114,23 @@ class Thread:
     def getAuthors(self):
         authors = []
         for message in self.messages:
-            if message['author'] not in authors:
-                authors.append(author)
+            if message.author not in authors:
+                authors.append(message.author)
         return authors
 
     # returns integer count of number of messages by author
     def singleAuthorCount(self, author):
         authorCount = 0
         for message in self.messages:
-            if messages['author'] == author:
+            if message.author == author:
                 authorCount += 1
         return authorCount
 
     # returns dict of author/count key/val pairs
     def allAuthorCounts(self):
-        allAuthorCounts = dict.fromKeys(self.getAuthors(), 0)
+        allAuthorCounts = dict.fromkeys(self.getAuthors(), 0)
         for author in allAuthorCounts.keys():
-            allAuthorCounts['author'] = self.singleAuthorCount(self, author)
+            allAuthorCounts[author] = self.singleAuthorCount(author)
         return allAuthorCounts
 
 
@@ -108,11 +156,24 @@ class Message:
         self.time = time # datetime object
         self.text = text # string
 
+    # string representation
+    def __str__(self):
+        return self.time.isoformat() + ', ' + self.author + ": " + self.text + '\n'
+
+    # returns Message object from dictionary
+    @classmethod
+    def fromDict(cls, messageDict):
+        message = cls('', datetime.datetime.now(), '') # empty initialization
+        message.author = messageDict['author']
+        message.time = datetime.datetime.strptime(messageDict['time'], '%A, %B %d, %Y at %I:%M%p')
+        message.text = messageDict['text']
+        return message
+
     # returns dict containing message information
     def toDict(self):
         messageDict = {}
         messageDict['author'] = self.author
-        messageDict['time'] = self.time.strftime('%A, %B %d, %Y at %I:%M%p %Z')
+        messageDict['time'] = self.time.strftime('%A, %B %d, %Y at %I:%M%p')
         messageDict['text'] = self.text
         return messageDict
 
