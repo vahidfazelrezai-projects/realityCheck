@@ -1,6 +1,7 @@
 import json
 import os
 import datetime
+import string
 from xml.dom.minidom import parseString
 
 
@@ -130,6 +131,29 @@ class Thread:
             allAuthorCounts[author] = self.singleAuthorCount(author)
         return allAuthorCounts
 
+    # returns dictionary of words with counts of occurrences
+    def getWordCounts(self):
+        wordCounts = {}
+
+        for message in self.messages:
+            messageWordCounts = message.getWordCounts()
+            for word in messageWordCounts.keys():
+                if word in wordCounts.keys():
+                    wordCounts[word] += messageWordCounts[word]
+                else:
+                    wordCounts[word] = messageWordCounts[word]
+        
+        return wordCounts
+
+    # returns list of word/count pairs
+    def getSortedWords(self):
+        wordCounts = self.getWordCounts()
+        sortedWordsOnly = sorted(wordCounts, key=lambda word: -wordCounts[word])
+        sortedWords = []
+        for word in sortedWordsOnly:
+            sortedWords.append([str(word), int(wordCounts[word])])
+        return sortedWords
+
 
 
 # series of messages in a thread grouped by proximity in time (to be implemented)
@@ -139,7 +163,7 @@ class Conversation:
 
 
 
-# series of consercutive messages from same author (to be implemented)
+# series of consecutive messages from same author (to be implemented)
 class Strand:
     def __init__(self, messages):
         self.messages = messages
@@ -174,10 +198,38 @@ class Message:
         messageDict['text'] = self.text
         return messageDict
 
-    # returns list of words in message text
-    def getWords(self):
-        return self.text.split(' ')
+    # returns dictionary of words with counts of occurrences
+    def getWordCounts(self):
+        # get text and normalize
+        text = self.text
+        text = text.strip() # remove whitespace
+        text = text.lower() # all lowercase
+        text = str(text).translate(string.maketrans(string.punctuation, ' '*len(string.punctuation))) # remove punctuation
 
+        # list of (not unique) words and dictionary to hold counts
+        wordList = text.split(' ')
+        wordCounts = {}
+        
+        # count
+        for word in wordList:
+            if word in wordCounts.keys():
+                wordCounts[word] += 1
+            else:
+                wordCounts[word] = 1
+
+        return wordCounts
+
+    # returns list of word/count pairs
+    def getSortedWords(self):
+        wordCounts = self.getWordCounts()
+        sortedWordsOnly = sorted(wordDict, key=lambda word: wordDict[word])
+        sortedWords = []
+
+        for word in sortedWordsOnly:
+            wordObject = {}
+            wordObject[word] = wordCounts[word]
+            sortedWords.append(wordObject)
+        return sortedWords
 
 
 
