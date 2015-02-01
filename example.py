@@ -14,6 +14,10 @@ myLoadedHistory = realityCheck.History.fromFile('../reality.json')
 # print out dictionary containing all authors and number of messages across the messaging history
 print myLoadedHistory.allAuthorCounts()
 
+# print names of threads with indices
+for i in range(len(myHistory.threads)):
+    print str(i) + ': ' + myHistory.threads[i].name
+
 # get random thread
 thread = myHistory.threads[randint(0, len(myHistory.threads))]
 
