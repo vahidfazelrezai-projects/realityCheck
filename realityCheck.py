@@ -184,10 +184,11 @@ class Message:
 ##### FACEBOOK DATA #####
 
 # returns History object from Facebook's data archive folder
-def getFacebookMessageHistory(pathToFacebookData):
+# assumes data downloaded according to https://www.facebook.com/help/131112897028467/
+def getFacebookMessageHistory(pathToFacebookDataFolder):
     # opens messages.htm file in Facebook data archive folder
     print 'Reading Facebook data...'
-    fin = open(os.path.join(pathToFacebookData, 'html/messages.htm'), 'r')
+    fin = open(os.path.join(pathToFacebookDataFolder, 'html/messages.htm'), 'r')
     rawRemaining = fin.read()
 
     # remove non-utf-8 characters (otherwise can't parse into DOM)
