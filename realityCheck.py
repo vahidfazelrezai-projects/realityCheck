@@ -1,5 +1,3 @@
-# TODO: implement __str__
-
 import json
 import os
 import datetime
@@ -7,7 +5,6 @@ from xml.dom.minidom import parseString
 
 
 ##### OBJECT CLASSES #####
-
 
 # entire history of all messages
 class History:
@@ -189,7 +186,7 @@ class Message:
 # returns History object from Facebook's data archive folder
 def getFacebookMessageHistory(pathToFacebookData):
     # opens messages.htm file in Facebook data archive folder
-    print 'Reading data...'
+    print 'Reading Facebook data...'
     fin = open(os.path.join(pathToFacebookData, 'html/messages.htm'), 'r')
     rawRemaining = fin.read()
 
@@ -197,12 +194,12 @@ def getFacebookMessageHistory(pathToFacebookData):
     rawRemaining = ''.join([i if ord(i) < 128 else ' ' for i in rawRemaining])
 
     # gets div with class="contents" using known file format
-    print 'Parsing data...'
+    print 'Parsing Facebook data...'
     (beginning, openContents, rawRemaining) = rawRemaining.partition("<div class=\"contents\">")
     (rawRemaining, closeContents, ending) = rawRemaining.partition("</div><div class=\"footer\">")
     facebookDOM = parseString("<document>" + rawRemaining + "</document>").firstChild    
 
-    print 'Processing data...'
+    print 'Processing Facebook data...'
     # name of user
     historyName = facebookDOM.firstChild.firstChild.nodeValue
 
@@ -235,4 +232,5 @@ def getFacebookMessageHistory(pathToFacebookData):
 
             threads.append(Thread(threadName, messages))
 
+    print 'Done.'
     return History(historyName, threads)
